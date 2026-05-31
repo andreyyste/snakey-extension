@@ -9,7 +9,7 @@ export default function Game({ onScoreUpdate }: { onScoreUpdate: (score: number)
     if (!gameRef.current) return;
 
     const config: Phaser.Types.Core.GameConfig = {
-      type: Phaser.AUTO,
+      type: Phaser.CANVAS,
       width: window.innerWidth,
       height: window.innerHeight,
       parent: gameRef.current,
