@@ -1,4 +1,6 @@
 chrome.action.onClicked.addListener((tab) => {
+  console.log("Extension icon clicked. Tab ID:", tab.id, "Tab URL:", tab.url);
+
   // Prevent injection on restricted internal chrome/firefox urls
   if (
     !tab.id || 
@@ -8,8 +10,11 @@ chrome.action.onClicked.addListener((tab) => {
     tab.url.startsWith('about:') || 
     tab.url.startsWith('moz-extension://')
   ) {
+    console.log("Injection blocked due to restricted URL scheme.");
     return;
   }
+
+  console.log("Checking if Snakey is already injected...");
 
   // Check if snakey has already been injected in this tab
   chrome.scripting.executeScript({
@@ -22,7 +27,10 @@ chrome.action.onClicked.addListener((tab) => {
     }
 
     const isAlreadyInjected = results && results[0] && results[0].result;
+    console.log("Injection check result. isAlreadyInjected:", isAlreadyInjected);
+
     if (!isAlreadyInjected) {
+      console.log("Injecting CSS: assets/index.css");
       // Inject the compiled CSS bundle
       chrome.scripting.insertCSS({
         target: { tabId: tab.id },
@@ -30,9 +38,12 @@ chrome.action.onClicked.addListener((tab) => {
       }, () => {
         if (chrome.runtime.lastError) {
           console.warn("Snakey CSS injection error:", chrome.runtime.lastError.message);
+        } else {
+          console.log("CSS injected successfully.");
         }
       });
 
+      console.log("Injecting JS: assets/index.js");
       // Inject the compiled JS bundle
       chrome.scripting.executeScript({
         target: { tabId: tab.id },
@@ -40,6 +51,8 @@ chrome.action.onClicked.addListener((tab) => {
       }, () => {
         if (chrome.runtime.lastError) {
           console.warn("Snakey JS injection error:", chrome.runtime.lastError.message);
+        } else {
+          console.log("JS injected successfully.");
         }
       });
     } else {
