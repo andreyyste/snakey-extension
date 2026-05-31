@@ -412,16 +412,18 @@ export class SnakeScene extends Phaser.Scene {
   private triggerWebBroke() {
     this.isGameOver = true;
     
-    // Fade body background to black
-    document.body.style.backgroundColor = 'black';
-    document.body.style.transition = 'background-color 1s ease';
+    // Fade HTML document background to black
+    document.documentElement.style.backgroundColor = 'black';
+    document.documentElement.style.transition = 'background-color 1s ease';
 
-    const root = document.getElementById('root');
-    if (root) {
-      root.style.transition = 'all 2.5s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
-      root.style.transform = 'rotate(25deg) scale(0) translateY(120vh)';
-      root.style.opacity = '0';
-      root.style.filter = 'blur(20px)';
+    // Apply the website collapse animation to the document body itself so it works universally on all sites
+    const body = document.body;
+    if (body) {
+      body.style.transformOrigin = 'center center';
+      body.style.transition = 'all 2.5s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
+      body.style.transform = 'rotate(25deg) scale(0) translateY(120vh)';
+      body.style.opacity = '0';
+      body.style.filter = 'blur(20px)';
     }
 
     // Fade out game canvas
