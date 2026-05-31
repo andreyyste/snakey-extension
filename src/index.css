@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+body {
+  margin: 0;
+  background-color: #f9fafb; /* gray-50 */
+  color: #111827; /* gray-900 */
+}
+
+
+
+#game-container-shell canvas,
+#phaser-game-container canvas {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 800px !important;
+  height: 600px !important;
+  max-width: none !important;
+  max-height: none !important;
+}

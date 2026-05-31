@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Snakey - DOM Eating Snake",
+  "version": "1.0",
+  "description": "Click the extension icon to let the snake loose and eat all DOM elements on the webpage immediately!",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Release Snakey!"
+  },
+  "icons": {
+    "128": "favicon.svg"
+  }
+}
