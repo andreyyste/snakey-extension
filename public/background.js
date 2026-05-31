@@ -1,6 +1,13 @@
 chrome.action.onClicked.addListener((tab) => {
-  // Prevent injection on restricted internal chrome urls
-  if (!tab.id || !tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) {
+  // Prevent injection on restricted internal chrome/firefox urls
+  if (
+    !tab.id || 
+    !tab.url || 
+    tab.url.startsWith('chrome://') || 
+    tab.url.startsWith('chrome-extension://') || 
+    tab.url.startsWith('about:') || 
+    tab.url.startsWith('moz-extension://')
+  ) {
     return;
   }
 
