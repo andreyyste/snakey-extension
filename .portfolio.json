@@ -1,0 +1,12 @@
+{
+  "include": true,
+  "featured": true,
+  "order": 2,
+  "title": "Snakey Browser Extension",
+  "brief": "A Chrome and Firefox extension that turns any webpage into a playable sandbox where a snake devours DOM elements in real time.",
+  "description": "Snakey Browser Extension is a cross-browser extension built using Manifest V3 that injects a playable Phaser 3 game onto any active tab. It parses the page DOM, turns HTML elements into target coordinates, and features custom chomp/collapse animations. It supports both Chromium (background service worker) and Firefox (background scripts), implements a Canvas-based rendering fallback to bypass strict WebGL CORS limitations, and applies fully container-scoped vanilla CSS overrides to prevent style bleeding on host pages.",
+  "tags": ["Browser Extension", "Chrome MV3", "Firefox MV3", "Phaser", "React", "TypeScript", "Vite"],
+  "coverImage": "https://drive.google.com/uc?export=download&id=1PSnwuA-C4iqJNIWGaapYJTqufO-i_PHr",
+  "hasSourceCode": true,
+  "liveUrl": "https://rasis.me"
+}
