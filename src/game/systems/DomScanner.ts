@@ -168,7 +168,7 @@ export class DomScanner {
     if (rect.width < 12 || rect.height < 12) return false;
     
     // Exclude large full-viewport layout sections/wrappers to prevent trapping the snake inside grid shells.
-    if (rect.width >= window.innerWidth * 0.9 || rect.height >= window.innerHeight * 0.9) return false;
+    if (rect.width >= window.innerWidth * 0.95 && rect.height >= window.innerHeight * 0.95) return false;
 
     // 1. Box shadow (standard visual boundary for modern cards)
     const hasShadow = style.boxShadow !== 'none' && style.boxShadow !== '';
