@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GRID_SIZE, MOVE_INTERVAL } from './constants';
+import { GRID_SIZE, MOVE_INTERVAL, GAME_COLORS } from './constants';
 import { AudioManager } from './systems/AudioManager';
 import { GameUI } from './ui/GameUI';
 import { Snake } from './core/Snake';
@@ -25,7 +25,6 @@ export class SnakeScene extends Phaser.Scene {
   private score: number = 0;
   private isGameOver: boolean = false;
   private isEscaped: boolean = false;
-  private finalPhaseStarted: boolean = false;
 
   constructor() {
     super('SnakeScene');
@@ -36,18 +35,18 @@ export class SnakeScene extends Phaser.Scene {
    * Generates procedural pixel graphics on the fly to avoid asset dependency lags.
    */
   preload() {
-    const graphics = this.make.graphics({ x: 0, y: 0, add: false });
+    const graphics = this.make.graphics({ x: 0, y: 0 });
     const factor = 5;
     const gs = GRID_SIZE * factor;
 
     // Procedural snake body texture
-    graphics.fillStyle(0x3b82f6, 1);
+    graphics.fillStyle(GAME_COLORS.SNAKE_BODY, 1);
     graphics.fillRoundedRect(1 * factor, 1 * factor, gs - 2 * factor, gs - 2 * factor, 4 * factor);
     graphics.generateTexture('snake-body', gs, gs);
 
     // Procedural snake head texture (with eyes)
     graphics.clear();
-    graphics.fillStyle(0x1d4ed8, 1);
+    graphics.fillStyle(GAME_COLORS.SNAKE_HEAD, 1);
     graphics.fillRoundedRect(1 * factor, 1 * factor, gs - 2 * factor, gs - 2 * factor, 6 * factor);
     graphics.fillStyle(0xffffff, 1);
     graphics.fillCircle(gs - 5 * factor, 6 * factor, 2 * factor);
@@ -56,7 +55,7 @@ export class SnakeScene extends Phaser.Scene {
 
     // Procedural normal food texture
     graphics.clear();
-    graphics.fillStyle(0xef4444, 1);
+    graphics.fillStyle(GAME_COLORS.FOOD, 1);
     graphics.fillCircle(gs / 2, gs / 2, gs / 2 - 2 * factor);
     graphics.generateTexture('food', gs, gs);
 
@@ -64,7 +63,7 @@ export class SnakeScene extends Phaser.Scene {
     graphics.clear();
     graphics.fillStyle(0x000000, 1);
     graphics.fillRoundedRect(gs / 4, gs / 4, gs / 2, gs / 2, 4 * factor);
-    graphics.fillStyle(0xff0000, 1);
+    graphics.fillStyle(GAME_COLORS.SPECIAL_FOOD, 1);
     graphics.fillRoundedRect(gs / 4 + 2 * factor, gs / 4 + 2 * factor, gs / 2 - 4 * factor, gs / 2 - 4 * factor, 2 * factor);
     graphics.generateTexture('special-food', gs, gs);
   }
@@ -75,7 +74,6 @@ export class SnakeScene extends Phaser.Scene {
   create() {
     this.isEscaped = true;
     this.isGameOver = false;
-    this.finalPhaseStarted = false;
     this.score = 0;
     window.dispatchEvent(new CustomEvent('snakey-score-update', { detail: 0 }));
     this.moveTimer = 0;
@@ -186,9 +184,7 @@ export class SnakeScene extends Phaser.Scene {
     DomAnimator.clearAll();
 
     // Restore DOM elements styles and clean up dynamic backgrounds
-    const eatenElements = document.querySelectorAll('[data-eaten], [data-card-eaten], [data-has-dynamic-bg]');
-    eatenElements.forEach((node) => {
-      const el = node as HTMLElement;
+    DomAnimator.getModifiedElements().forEach((el) => {
       el.style.transform = '';
       el.style.opacity = '';
       el.style.visibility = '';
@@ -246,7 +242,7 @@ export class SnakeScene extends Phaser.Scene {
     }
   }
 
-  update(time: number, delta: number) {
+  update(_time: number, delta: number) {
     if (this.isGameOver) {
       if (this.input.keyboard?.checkDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE), 250)) {
         this.scene.restart();
@@ -269,7 +265,7 @@ export class SnakeScene extends Phaser.Scene {
    * Decides which phase (normal vs escape) is active and runs colliders.
    */
   private processGameTick(duration: number) {
-    const { dead, hitWall, newX, newY, tailOldX, tailOldY } = this.snake.move(duration, this.isEscaped);
+    const { dead, hitWall, newX, newY } = this.snake.move(duration, this.isEscaped);
 
     if (dead) {
       // If the snake is escaped and goes off the document scroll boundary, 
@@ -285,9 +281,9 @@ export class SnakeScene extends Phaser.Scene {
     }
 
     if (this.isEscaped) {
-      this.processEscapePhase(newX, newY, tailOldX, tailOldY);
+      this.processEscapePhase(newX, newY);
     } else {
-      this.processNormalPhase(newX, newY, tailOldX, tailOldY);
+      this.processNormalPhase(newX, newY);
     }
   }
 
@@ -295,7 +291,7 @@ export class SnakeScene extends Phaser.Scene {
    * Physics loop for the standard gameplay.
    * Collision check against standard food coordinates inside the canvas.
    */
-  private processNormalPhase(newX: number, newY: number, tailOldX: number, tailOldY: number) {
+  private processNormalPhase(newX: number, newY: number) {
     if (this.food.checkCollision(newX, newY, this.snake.stepSize)) {
       this.score += 10;
       window.dispatchEvent(new CustomEvent('snakey-score-update', { detail: this.score }));
@@ -320,7 +316,7 @@ export class SnakeScene extends Phaser.Scene {
    * Physics loop for the escaped gameplay.
    * Checks collisions against dynamic DOM elements on the entire webpage.
    */
-  private processEscapePhase(newX: number, newY: number, tailOldX: number, tailOldY: number) {
+  private processEscapePhase(newX: number, newY: number) {
     const headRect = new Phaser.Geom.Rectangle(
       newX - this.snake.stepSize / 2,
       newY - this.snake.stepSize / 2,

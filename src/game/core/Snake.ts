@@ -23,23 +23,23 @@ export class Snake {
   /**
    * Spawns the initial 3-segment snake at the center of the Phaser canvas coordinate space.
    */
-  public create() {
+  public create(startX?: number, startY?: number) {
     const offset = GRID_SIZE / 2;
-    const startX = Math.floor(CANVAS_WIDTH / 2 / GRID_SIZE) * GRID_SIZE + offset;
-    const startY = Math.floor(CANVAS_HEIGHT / 2 / GRID_SIZE) * GRID_SIZE + offset;
+    const finalX = startX !== undefined ? startX : Math.floor(CANVAS_WIDTH / 2 / GRID_SIZE) * GRID_SIZE + offset;
+    const finalY = startY !== undefined ? startY : Math.floor(CANVAS_HEIGHT / 2 / GRID_SIZE) * GRID_SIZE + offset;
 
     this.segments = [];
     this.logicalPositions = [];
 
     // Initialize 3-segment logical position vectors (head, body, tail)
-    this.logicalPositions.push(new Phaser.Math.Vector2(startX, startY));
-    this.logicalPositions.push(new Phaser.Math.Vector2(startX - GRID_SIZE, startY));
-    this.logicalPositions.push(new Phaser.Math.Vector2(startX - GRID_SIZE * 2, startY));
+    this.logicalPositions.push(new Phaser.Math.Vector2(finalX, finalY));
+    this.logicalPositions.push(new Phaser.Math.Vector2(finalX - GRID_SIZE, finalY));
+    this.logicalPositions.push(new Phaser.Math.Vector2(finalX - GRID_SIZE * 2, finalY));
 
     // Instantiate game textures for the corresponding segments
-    this.segments.push(this.scene.add.image(startX, startY, 'snake-head').setOrigin(0.5).setScale(this.TEXTURE_SCALE));
-    this.segments.push(this.scene.add.image(startX - GRID_SIZE, startY, 'snake-body').setOrigin(0.5).setScale(this.TEXTURE_SCALE));
-    this.segments.push(this.scene.add.image(startX - GRID_SIZE * 2, startY, 'snake-body').setOrigin(0.5).setScale(this.TEXTURE_SCALE));
+    this.segments.push(this.scene.add.image(finalX, finalY, 'snake-head').setOrigin(0.5).setScale(this.TEXTURE_SCALE));
+    this.segments.push(this.scene.add.image(finalX - GRID_SIZE, finalY, 'snake-body').setOrigin(0.5).setScale(this.TEXTURE_SCALE));
+    this.segments.push(this.scene.add.image(finalX - GRID_SIZE * 2, finalY, 'snake-body').setOrigin(0.5).setScale(this.TEXTURE_SCALE));
     
     this.direction.set(1, 0);
     this.nextDirection.set(1, 0);
@@ -164,7 +164,7 @@ export class Snake {
       this.pendingGrowths--;
     }
 
-    return { dead: false, newX, newY, tailOldX, tailOldY };
+    return { dead: false, hitWall: false, newX, newY, tailOldX, tailOldY };
   }
 
   /**

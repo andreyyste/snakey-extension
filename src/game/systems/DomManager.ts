@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { DomScanner } from './DomScanner';
 import { DomAnimator } from './DomAnimator';
 
-export type DomBodyType = 'char' | 'media' | 'wall' | 'cardWall' | 'finalTarget';
+export type DomBodyType = 'char' | 'media' | 'wall' | 'cardWall' | 'finalTarget' | 'textContainer';
 
 export interface IDomBody {
   element: HTMLElement;
@@ -24,6 +24,7 @@ export class DomManager {
   private observer: MutationObserver | null = null;
   private isScanning: boolean = false;
   private debounceTimer: any = null;
+  private resizeTimeout: any = null;
   
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -86,7 +87,12 @@ export class DomManager {
    * Forces a fresh tree scan and updates all coordinate rectangles.
    */
   private onResize = () => {
-    this.scanDomElements();
+    if (this.resizeTimeout) {
+      clearTimeout(this.resizeTimeout);
+    }
+    this.resizeTimeout = setTimeout(() => {
+      this.scanDomElements();
+    }, 200);
   }
 
   /**
@@ -240,6 +246,10 @@ export class DomManager {
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);
       this.debounceTimer = null;
+    }
+    if (this.resizeTimeout) {
+      clearTimeout(this.resizeTimeout);
+      this.resizeTimeout = null;
     }
   }
 }

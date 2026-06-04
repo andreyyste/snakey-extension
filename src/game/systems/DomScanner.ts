@@ -281,40 +281,7 @@ export class DomScanner {
     });
   }
 
-  /**
-   * Adds four physical walls around the game shell/canvas container.
-   * These act as the boundary of the normal game phase.
-   */
-  private static addGameShellWalls(scrollX: number, scrollY: number, domBodies: IDomBody[], gameContainer: HTMLElement | null = null) {
-    const container = gameContainer || document.getElementById('game-container-shell');
-    if (container) {
-      const rect = container.getBoundingClientRect();
-      const ax = rect.left + scrollX;
-      const ay = rect.top + scrollY;
-      const w = rect.width;
-      const h = rect.height;
-      const thick = 15;
-      
-      container.style.transition = 'all 0.5s ease';
-      
-      const walls = [
-        new Phaser.Geom.Rectangle(ax, ay, w, thick),
-        new Phaser.Geom.Rectangle(ax, ay + h - thick, w, thick),
-        new Phaser.Geom.Rectangle(ax, ay, thick, h),
-        new Phaser.Geom.Rectangle(ax + w - thick, ay, thick, h),
-      ];
-      
-      walls.forEach((wall, idx) => {
-        domBodies.push({
-          element: container,
-          body: wall,
-          id: `wall-${idx}`,
-          hasBeenEaten: false,
-          type: 'wall'
-        });
-      });
-    }
-  }
+
 
   /**
    * Helper to split an element's text nodes into individual edible character spans.

@@ -14,6 +14,7 @@ export class DomAnimator {
   // on unmounted or restored elements.
   private static activeIntervals = new Set<any>();
   private static activeTimeouts = new Set<any>();
+  private static modifiedElements = new Set<HTMLElement>();
 
   /**
    * Clears all running intervals and timeouts registered by this animator.
@@ -25,6 +26,14 @@ export class DomAnimator {
     this.activeIntervals.clear();
     this.activeTimeouts.forEach(id => clearTimeout(id));
     this.activeTimeouts.clear();
+    this.modifiedElements.clear();
+  }
+
+  /**
+   * Exposes the collection of mutated elements for restoration cleanups.
+   */
+  public static getModifiedElements() {
+    return this.modifiedElements;
   }
 
   /**
@@ -41,6 +50,7 @@ export class DomAnimator {
       } else {
         item.element.dataset.eaten = 'true';
       }
+      this.modifiedElements.add(item.element);
     }
 
     // Mark descendants as eaten to avoid "ghost" collisions, except for cardWall.
@@ -52,6 +62,7 @@ export class DomAnimator {
           b.hasBeenEaten = true;
           if (b.element) {
             b.element.dataset.eaten = 'true';
+            this.modifiedElements.add(b.element);
           }
           b.element.style.transform = 'scale(0)';
           b.element.style.opacity = '0';
@@ -239,6 +250,7 @@ export class DomAnimator {
   private static setupDynamicCardBackground(el: HTMLElement) {
     if (el.dataset.hasDynamicBg === 'true') return;
 
+    this.modifiedElements.add(el);
     const style = window.getComputedStyle(el);
     
     // Save original visual style values in dataset attributes.
