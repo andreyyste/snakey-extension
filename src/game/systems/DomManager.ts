@@ -87,7 +87,6 @@ export class DomManager {
    */
   private onResize = () => {
     this.scanDomElements();
-    this.updatePositions();
   }
 
   /**

@@ -77,6 +77,7 @@ export class SnakeScene extends Phaser.Scene {
     this.isGameOver = false;
     this.finalPhaseStarted = false;
     this.score = 0;
+    window.dispatchEvent(new CustomEvent('snakey-score-update', { detail: 0 }));
     this.moveTimer = 0;
 
     // Direct fixed viewport overlay styling for Chrome Extension
@@ -297,10 +298,10 @@ export class SnakeScene extends Phaser.Scene {
   private processNormalPhase(newX: number, newY: number, tailOldX: number, tailOldY: number) {
     if (this.food.checkCollision(newX, newY, this.snake.stepSize)) {
       this.score += 10;
-      this.game.events.emit('score-update', this.score);
+      window.dispatchEvent(new CustomEvent('snakey-score-update', { detail: this.score }));
       this.audioManager.playEatSound();
       
-      this.snake.grow(tailOldX, tailOldY);
+      this.snake.queueGrow(1);
       this.food.reposition(this.snake);
 
       // Spawn the escape pill when score threshold is crossed
@@ -335,19 +336,14 @@ export class SnakeScene extends Phaser.Scene {
         this.domManager.eatElement(domHit);
       });
 
-      // Directly update the original HTML score counter text inside the DOM.
-      // We do this rather than emitting React score-update events because React re-renders 
-      // destroy the inline styles and eaten states injected onto DOM nodes.
-      const scoreSpan = document.querySelector('#score-display span') as HTMLElement;
-      if (scoreSpan) {
-        scoreSpan.textContent = this.score.toString();
-      }
+      window.dispatchEvent(new CustomEvent('snakey-score-update', { detail: this.score }));
 
       // Grow the snake for every 10 points accumulated
       const previousTens = Math.floor(oldScore / 10);
       const currentTens = Math.floor(this.score / 10);
-      for(let i=0; i < (currentTens - previousTens); i++){
-         this.snake.grow(tailOldX, tailOldY);
+      const diff = currentTens - previousTens;
+      if (diff > 0) {
+        this.snake.queueGrow(diff);
       }
 
       this.audioManager.playEatSound();
@@ -383,8 +379,7 @@ export class SnakeScene extends Phaser.Scene {
       seg.y += dy;
     });
 
-    // @ts-ignore
-    this.snake.logicalPositions.forEach(pos => {
+    this.snake.getLogicalPositions().forEach(pos => {
       pos.x += dx;
       pos.y += dy;
     });

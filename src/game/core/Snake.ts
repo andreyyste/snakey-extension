@@ -10,6 +10,7 @@ export class Snake {
   private scene: Phaser.Scene;
   private segments: Phaser.GameObjects.Image[] = [];
   private logicalPositions: Phaser.Math.Vector2[] = [];
+  private pendingGrowths: number = 0;
   public direction: Phaser.Math.Vector2 = new Phaser.Math.Vector2(1, 0);
   public nextDirection: Phaser.Math.Vector2 = new Phaser.Math.Vector2(1, 0);
   public stepSize: number = GRID_SIZE;
@@ -20,29 +21,30 @@ export class Snake {
   }
 
   /**
-   * Spawns the initial 3-segment snake. Defaults to center of Phaser canvas.
+   * Spawns the initial 3-segment snake at the center of the Phaser canvas coordinate space.
    */
-  public create(startX?: number, startY?: number) {
+  public create() {
     const offset = GRID_SIZE / 2;
-    const finalStartX = startX !== undefined ? startX : (Math.floor(CANVAS_WIDTH / 2 / GRID_SIZE) * GRID_SIZE + offset);
-    const finalStartY = startY !== undefined ? startY : (Math.floor(CANVAS_HEIGHT / 2 / GRID_SIZE) * GRID_SIZE + offset);
+    const startX = Math.floor(CANVAS_WIDTH / 2 / GRID_SIZE) * GRID_SIZE + offset;
+    const startY = Math.floor(CANVAS_HEIGHT / 2 / GRID_SIZE) * GRID_SIZE + offset;
 
     this.segments = [];
     this.logicalPositions = [];
 
     // Initialize 3-segment logical position vectors (head, body, tail)
-    this.logicalPositions.push(new Phaser.Math.Vector2(finalStartX, finalStartY));
-    this.logicalPositions.push(new Phaser.Math.Vector2(finalStartX - GRID_SIZE, finalStartY));
-    this.logicalPositions.push(new Phaser.Math.Vector2(finalStartX - GRID_SIZE * 2, finalStartY));
+    this.logicalPositions.push(new Phaser.Math.Vector2(startX, startY));
+    this.logicalPositions.push(new Phaser.Math.Vector2(startX - GRID_SIZE, startY));
+    this.logicalPositions.push(new Phaser.Math.Vector2(startX - GRID_SIZE * 2, startY));
 
     // Instantiate game textures for the corresponding segments
-    this.segments.push(this.scene.add.image(finalStartX, finalStartY, 'snake-head').setOrigin(0.5).setScale(this.TEXTURE_SCALE));
-    this.segments.push(this.scene.add.image(finalStartX - GRID_SIZE, finalStartY, 'snake-body').setOrigin(0.5).setScale(this.TEXTURE_SCALE));
-    this.segments.push(this.scene.add.image(finalStartX - GRID_SIZE * 2, finalStartY, 'snake-body').setOrigin(0.5).setScale(this.TEXTURE_SCALE));
+    this.segments.push(this.scene.add.image(startX, startY, 'snake-head').setOrigin(0.5).setScale(this.TEXTURE_SCALE));
+    this.segments.push(this.scene.add.image(startX - GRID_SIZE, startY, 'snake-body').setOrigin(0.5).setScale(this.TEXTURE_SCALE));
+    this.segments.push(this.scene.add.image(startX - GRID_SIZE * 2, startY, 'snake-body').setOrigin(0.5).setScale(this.TEXTURE_SCALE));
     
     this.direction.set(1, 0);
     this.nextDirection.set(1, 0);
     this.stepSize = GRID_SIZE;
+    this.pendingGrowths = 0;
   }
 
   /**
@@ -57,6 +59,13 @@ export class Snake {
    */
   public getHead() {
     return this.segments[0];
+  }
+
+  /**
+   * Returns logical position vectors of all segments.
+   */
+  public getLogicalPositions() {
+    return this.logicalPositions;
   }
 
   /**
@@ -149,6 +158,12 @@ export class Snake {
     else if (this.direction.y === 1) head.setAngle(90);
     else if (this.direction.y === -1) head.setAngle(-90);
 
+    // Apply queued growths at the tail position vacated by this tick's movement
+    if (this.pendingGrowths > 0) {
+      this.grow(tailOldX, tailOldY);
+      this.pendingGrowths--;
+    }
+
     return { dead: false, newX, newY, tailOldX, tailOldY };
   }
 
@@ -162,7 +177,10 @@ export class Snake {
     this.segments.push(newSegment);
   }
 
-  public fatten() {
-    // Disabled as requested
+  /**
+   * Queues segment growths to be processed progressively over the next moves.
+   */
+  public queueGrow(count: number = 1) {
+    this.pendingGrowths += count;
   }
 }
